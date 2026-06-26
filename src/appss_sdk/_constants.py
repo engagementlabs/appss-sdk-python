@@ -21,6 +21,12 @@ DEFAULT_JITTER_FACTOR: Final[float] = 0.2
 
 EVENTS_PATH: Final[str] = "/api/v1/events"
 USER_PROPERTIES_PATH: Final[str] = "/api/v1/user-properties"
+PUSH_EVENTS_PATH: Final[str] = "/api/v1/push-events"
+
+PUSH_SEND_MAX_RETRIES: Final[int] = 3
+PUSH_SEND_BACKOFF_MS: Final[int] = 1_000
+PUSH_SEND_MAX_BACKOFF_MS: Final[int] = 8_000
+BOT_TOKEN_ENV: Final[str] = "BOT_TOKEN"
 
 DEFAULT_REQUEST_TIMEOUT_MS: Final[int] = 30_000
 SHUTDOWN_TIMEOUT_MS: Final[int] = 5_000

@@ -134,6 +134,7 @@ from appss_sdk import (
     IEventQueue,
     ILogger,
     ITransport,
+    PUSH_CLICKED,
 )
 from appss_sdk.telegram import (
     from_aiogram_message,
@@ -150,6 +151,7 @@ Telegram helpers are intentionally **not** re-exported at the root, so
 ### Client methods
 
 - `appss.track(distinct_id, event, properties=None)` — enqueue an event.
+- `appss.track_push_clicked(distinct_id, *, push_id, action_id="")` — report a Push Hub push-button click (see [Push Hub click tracking](#push-hub-click-tracking)).
 - `appss.set_user_property(distinct_id, key, value)` — update a single user property.
 - `appss.set_user_properties(distinct_id, properties)` — update multiple user properties in a single POST.
 - `appss.set_super_properties(properties)` — register properties that are automatically attached to every subsequent `track` event.
@@ -182,6 +184,58 @@ appss = create_appss({
 
 You can also implement your own `IEventQueue` (e.g. backed by Redis); the
 contract is `enqueue / drain / peek / size / is_empty / clear`.
+
+## Push Hub click tracking
+
+Platform pushes (Push Hub) are sent by push-api, which emits the system-side
+telemetry itself (Push Queued / Sent / Failed). The **click** on an inline
+button, however, is delivered to your bot's webhook — not to push-api — so your
+app reports it via `track_push_clicked`:
+
+```python
+appss.track_push_clicked(distinct_id, push_id="...", action_id="...")
+```
+
+This is a thin wrapper over `track` that emits the reserved `"Push Clicked"`
+event with a stable schema — `{push_id, action_id, source: "push_hub"}`. You
+only pass `push_id` and `action_id`; the tracker resolves `template_id` /
+`step_id` itself by joining `push_id` to the Push Sent telemetry, and computes
+per-step CTR server-side.
+
+push-api packs the identifiers into the button at render time; pull them back
+out of the callback:
+
+**Callback / pay button** — `callback_data` is `pc:{push_id}:{action_id}` (or
+`pc:{push_id}` when `action_id` doesn't fit Telegram's 64-byte limit):
+
+```python
+# aiogram example
+@router.callback_query(F.data.startswith("pc:"))
+async def on_push_click(cb: CallbackQuery) -> None:
+    parts = cb.data.split(":")
+    push_id = parts[1]
+    action_id = parts[2] if len(parts) > 2 else ""
+    appss.track_push_clicked(str(cb.from_user.id), push_id=push_id, action_id=action_id)
+    await cb.answer()
+```
+
+**URL / web_app button** — the identifiers arrive as a query string
+(`?push_id=...&action_id=...`), or as the mini-app `start_param` / launch query.
+Read them from the request and call the helper the same way:
+
+```python
+from urllib.parse import parse_qs
+
+q = parse_qs(query_string)
+appss.track_push_clicked(
+    distinct_id,
+    push_id=q.get("push_id", [""])[0],
+    action_id=q.get("action_id", [""])[0],
+)
+```
+
+> The `"Push Clicked"` event must be enabled for the app in the tracker for the
+> click to land in analytics (new event names are auto-detected on first sight).
 
 ## Wire protocol
 
