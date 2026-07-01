@@ -1,9 +1,19 @@
 """SDK-wide constants."""
 
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _pkg_version
 from typing import Final
 
+
+def _detect_version() -> str:
+    try:
+        return _pkg_version("appss-sdk")
+    except PackageNotFoundError:
+        return "0.0.0+unknown"
+
+
 SDK_NAME: Final[str] = "@appss-sdk"
-SDK_VERSION: Final[str] = "0.1.0"
+SDK_VERSION: Final[str] = _detect_version()
 PROTOCOL_VERSION: Final[str] = "1"
 
 DEFAULT_ENDPOINT: Final[str] = "https://appss-event-tracker-back-p.engagelabs.org"

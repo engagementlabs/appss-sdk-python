@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import httpx
 
@@ -41,10 +42,10 @@ class TelegramSender:
         chat_id: int,
         text: str,
         parse_mode: str | None = None,
-        reply_markup: dict | None = None,
+        reply_markup: dict[str, Any] | None = None,
     ) -> SendOutcome:
         url = f"{self._base_url}/bot{token}/sendMessage"
-        body: dict = {"chat_id": chat_id, "text": text}
+        body: dict[str, Any] = {"chat_id": chat_id, "text": text}
         if parse_mode:
             body["parse_mode"] = parse_mode
         if reply_markup:
@@ -67,7 +68,5 @@ class TelegramSender:
 
         reason = _classify(response.status_code, payload.get("description", ""))
         parameters = payload.get("parameters")
-        retry_after = (
-            parameters.get("retry_after") if isinstance(parameters, dict) else None
-        )
+        retry_after = parameters.get("retry_after") if isinstance(parameters, dict) else None
         return SendOutcome(ok=False, reason=reason, retry_after=retry_after)

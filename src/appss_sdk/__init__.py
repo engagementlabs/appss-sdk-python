@@ -6,6 +6,7 @@ from appss_sdk._config import AppssConfig, ResolvedConfig, RetryConfig
 from appss_sdk._constants import SDK_NAME, SDK_VERSION
 from appss_sdk._ports import IEventQueue, ILogger, ITransport
 from appss_sdk._storage_key import storage_key
+from appss_sdk._telegram import SendOutcome
 from appss_sdk._types import (
     AppssEvent,
     EventProperties,
@@ -27,7 +28,6 @@ from appss_sdk.errors import (
     QueueOverflowError,
     RateLimitError,
 )
-from appss_sdk._telegram import SendOutcome
 from appss_sdk.push import (
     PURCHASE,
     PUSH_CLICKED,
@@ -44,7 +44,6 @@ __all__ = [
     "PUSH_SENT",
     "SDK_NAME",
     "SDK_VERSION",
-    "SendOutcome",
     "ApiKeyRevokedError",
     "AppssClient",
     "AppssConfig",
@@ -68,9 +67,10 @@ __all__ = [
     "RateLimitError",
     "ResolvedConfig",
     "RetryConfig",
+    "SendOutcome",
     "TransportResponse",
     "UserProperties",
     "create_appss",
     "storage_key",
 ]
-__version__ = "0.1.0"
+__version__ = SDK_VERSION

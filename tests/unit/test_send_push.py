@@ -129,8 +129,10 @@ async def test_send_push_terminal_failure_emits_failed(monkeypatch) -> None:
 @pytest.mark.asyncio
 async def test_send_push_retries_transient_then_fails(monkeypatch) -> None:
     monkeypatch.setenv("BOT_TOKEN", "tok-123")
+
     async def _no_sleep(_delay):
         return
+
     monkeypatch.setattr(asyncio, "sleep", _no_sleep)
     transport = _TestTransport(status=200)
     client = _TestClient(_config(), transport=transport)
@@ -152,13 +154,18 @@ async def test_send_push_retries_transient_then_fails(monkeypatch) -> None:
 @pytest.mark.asyncio
 async def test_send_push_retries_transient_then_succeeds(monkeypatch) -> None:
     monkeypatch.setenv("BOT_TOKEN", "tok-123")
+
     async def _no_sleep(_delay):
         return
+
     monkeypatch.setattr(asyncio, "sleep", _no_sleep)
     transport = _TestTransport(status=200)
     client = _TestClient(_config(), transport=transport)
     sender = _FakeSender(
-        [SendOutcome(ok=False, reason="throttled", retry_after=1), SendOutcome(ok=True, tg_message_id=7)]
+        [
+            SendOutcome(ok=False, reason="throttled", retry_after=1),
+            SendOutcome(ok=True, tg_message_id=7),
+        ]
     )
     client._telegram_sender = sender
     try:

@@ -15,8 +15,10 @@ from appss_sdk._constants import (
 )
 
 
-def test_sdk_version_pinned():
-    assert SDK_VERSION == "0.1.0"
+def test_sdk_version_is_non_empty_string():
+    assert isinstance(SDK_VERSION, str)
+    assert SDK_VERSION
+    assert SDK_VERSION[0].isdigit()
 
 
 def test_sdk_name_is_appss_sdk():

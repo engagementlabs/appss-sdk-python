@@ -31,7 +31,10 @@ from appss_sdk._constants import (
 )
 from appss_sdk._domain.event import build_event, event_to_payload
 from appss_sdk._domain.flush import FlushPolicy
+from appss_sdk._domain.retry import RetryPolicy
+from appss_sdk._ports import IEventQueue, ILogger, ITransport
 from appss_sdk._telegram import RETRYABLE_REASONS, SendOutcome, TelegramSender
+from appss_sdk.errors import AppssError, ErrorCode, NotInitializedError
 from appss_sdk.push import (
     PURCHASE,
     PUSH_CLICKED,
@@ -41,9 +44,6 @@ from appss_sdk.push import (
     PUSH_SOURCE_SDK,
     PUSH_TRANSPORT_TELEGRAM,
 )
-from appss_sdk._domain.retry import RetryPolicy
-from appss_sdk._ports import IEventQueue, ILogger, ITransport
-from appss_sdk.errors import AppssError, ErrorCode, NotInitializedError
 
 
 class BaseAppssClient(abc.ABC):
@@ -242,8 +242,9 @@ class BaseAppssClient(abc.ABC):
         parse_mode = message.get("parse_mode")
         reply_markup = message.get("reply_markup")
 
+        raw_telegram_id = recipient.get("telegram_id")
         try:
-            chat_id: int | None = int(recipient.get("telegram_id"))
+            chat_id: int | None = int(raw_telegram_id) if raw_telegram_id is not None else None
         except (TypeError, ValueError):
             chat_id = None
 
@@ -261,9 +262,7 @@ class BaseAppssClient(abc.ABC):
         if not text:
             return await _fail("empty_content")
 
-        outcome = await self._send_with_retries(
-            token, chat_id, text, parse_mode, reply_markup
-        )
+        outcome = await self._send_with_retries(token, chat_id, text, parse_mode, reply_markup)
         if outcome.ok:
             await self._emit_push_event(
                 PUSH_SENT,
@@ -405,7 +404,7 @@ class BaseAppssClient(abc.ABC):
         chat_id: int,
         text: str,
         parse_mode: str | None,
-        reply_markup: dict | None,
+        reply_markup: dict[str, Any] | None,
     ) -> SendOutcome:
         attempt = 0
         while True:
@@ -422,9 +421,7 @@ class BaseAppssClient(abc.ABC):
             if outcome.reason == "throttled" and outcome.retry_after:
                 delay_ms = outcome.retry_after * 1000
             else:
-                delay_ms = min(
-                    PUSH_SEND_BACKOFF_MS * (2**attempt), PUSH_SEND_MAX_BACKOFF_MS
-                )
+                delay_ms = min(PUSH_SEND_BACKOFF_MS * (2**attempt), PUSH_SEND_MAX_BACKOFF_MS)
             if self._logger is not None:
                 self._logger.warn(
                     "Push send retrying",

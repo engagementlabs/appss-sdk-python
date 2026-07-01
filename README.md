@@ -1,5 +1,9 @@
 # appss-sdk
 
+[![CI](https://github.com/engagementlabs/appss-sdk-python/actions/workflows/ci.yml/badge.svg)](https://github.com/engagementlabs/appss-sdk-python/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/appss-sdk.svg)](https://pypi.org/project/appss-sdk/)
+[![Python](https://img.shields.io/pypi/pyversions/appss-sdk.svg)](https://pypi.org/project/appss-sdk/)
+
 Async Python SDK for APPSS analytics — events, user properties, and super
 properties — designed for Telegram bots and server-side workloads.
 
@@ -265,6 +269,11 @@ Headers added automatically:
 | Network exception | Retry up to `retry.max_retries`, then `MaxRetriesExceededError`. |
 
 All errors are delivered to the `on_error(error)` callback if one is configured.
+
+## Releasing
+
+Releases are automated: tag a commit `vX.Y.Z` and push it — CI builds and
+publishes to PyPI. The version is single-sourced from the git tag.
 
 ## License
 

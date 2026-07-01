@@ -56,9 +56,7 @@ async def test_track_push_clicked_includes_offer_token_when_given() -> None:
     transport = _TestTransport(status=200)
     client = _TestClient(_config(), transport=transport)
     try:
-        client.track_push_clicked(
-            "user-1", push_id="p1", action_id="a1", offer_token="of_abc"
-        )
+        client.track_push_clicked("user-1", push_id="p1", action_id="a1", offer_token="of_abc")
         await client.flush()
         props = transport.calls[0][1]["batch"][0]["properties"]
         assert props["offer_token"] == "of_abc"
