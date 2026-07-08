@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import base64
@@ -50,14 +49,14 @@ def decode_and_verify_offer(
         return None
 
     try:
-        raw = _b64u_decode(token[len(_PREFIX):])
+        raw = _b64u_decode(token[len(_PREFIX) :])
     except (ValueError, binascii.Error):
         return None
     if len(raw) < _PAYLOAD_LEN + _SIG_LEN:
         return None
 
     payload = raw[:_PAYLOAD_LEN]
-    sig = raw[_PAYLOAD_LEN:_PAYLOAD_LEN + _SIG_LEN]
+    sig = raw[_PAYLOAD_LEN : _PAYLOAD_LEN + _SIG_LEN]
 
     key = secret.encode("utf-8") if isinstance(secret, str) else secret
     expected = hmac.new(key, payload, hashlib.sha256).digest()[:_SIG_LEN]
