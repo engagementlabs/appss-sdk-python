@@ -80,8 +80,7 @@ async def main() -> None:
 
         outcome = await appss.send_push(payload)
         print(
-            f"send_push -> ok={outcome.ok} reason={outcome.reason} "
-            f"msg_id={outcome.tg_message_id}"
+            f"send_push -> ok={outcome.ok} reason={outcome.reason} msg_id={outcome.tg_message_id}"
         )
         if outcome.ok:
             await message.answer(f"✅ Push delivered (tg_message_id={outcome.tg_message_id})")
