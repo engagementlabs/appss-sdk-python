@@ -28,6 +28,7 @@ from appss_sdk.errors import (
     QueueOverflowError,
     RateLimitError,
 )
+from appss_sdk.offer import OfferResult, decode_and_verify_offer
 from appss_sdk.push import (
     PURCHASE,
     PUSH_CLICKED,
@@ -37,6 +38,8 @@ from appss_sdk.push import (
 )
 
 __all__ = [
+    "OfferResult",
+    "decode_and_verify_offer",
     "PURCHASE",
     "PUSH_CLICKED",
     "PUSH_FAILED",
